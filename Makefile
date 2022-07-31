@@ -11,7 +11,7 @@ clean:
 	rm -f *.nes
 
 run: helloworld.nes
-	java -jar /Applications/Nintaco_bin_2020-05-01/Nintaco.jar ./helloworld.nes
+	java -jar /Applications/Nintaco/Nintaco.jar ./helloworld.nes
 
 
 
