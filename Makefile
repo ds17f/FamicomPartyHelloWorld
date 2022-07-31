@@ -1,8 +1,8 @@
-helloworld.nes: main.o
-	ld65 main.o -t nes -o helloworld.nes
+helloworld.nes: helloworld.o
+	ld65 helloworld.o -t nes -o helloworld.nes
 
-main.o:
-	ca65 main.asm
+helloworld.o:
+	ca65 helloworld.asm
 
 
 clean:
@@ -13,6 +13,6 @@ clean:
 run: helloworld.nes
 	java -jar /Applications/Nintaco/Nintaco.jar ./helloworld.nes
 
-
+runfresh: clean run
 
 
