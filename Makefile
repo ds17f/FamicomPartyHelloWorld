@@ -1,10 +1,17 @@
-helloworld.nes: helloworld.o
-	ld65 helloworld.o -t nes -o helloworld.nes
+helloworld.nes: reset.o helloworld.o
+	ld65 build/reset.o build/helloworld.o -C nes.cfg -o helloworld.nes
 
-helloworld.o: helloworld.asm
-	ca65 helloworld.asm
+reset.o: setup src/reset.asm
+	ca65 src/reset.asm -o build/reset.o
+
+helloworld.o: setup src/helloworld.asm
+	ca65 src/helloworld.asm -o build/helloworld.o
+
+setup:
+	mkdir build
 
 clean:
+	rm -rf ./build
 	rm -f *.out
 	rm -f *.o
 	rm -f *.nes
