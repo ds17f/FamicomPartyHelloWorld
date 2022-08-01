@@ -1,5 +1,12 @@
 .segment "HEADER"   ; HEADER is information which tells an emulator what chips are in the cartridge
-.byte $4e, $45, $53, $1a, $02, $01, $00, $00
+; The following are raw bytes written to output
+; they identify the file as an "iNES" rom
+; they write the literal NES\Eof
+; then they write 2 16kb program roms
+; one 8kb char rom
+; and a mapper 0 or NROM
+; http://wiki.nesdev.com/w/index.php/INES
+.byte $4e, $45, $53, $1a, $02, $01, $00, $00        ; N,E,S,EoF,
 
 .segment "CODE"     ; CODE is all program code
 .proc irq_handler
