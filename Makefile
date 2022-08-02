@@ -8,7 +8,7 @@ helloworld.o: setup src/helloworld.asm
 	ca65 src/helloworld.asm -o build/helloworld.o
 
 setup:
-	mkdir build
+	mkdir -p build
 
 clean:
 	rm -rf ./build
