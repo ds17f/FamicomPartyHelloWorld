@@ -35,7 +35,7 @@ load_palettes:
     LDA palettes, X         ; load the pallet color with offest
     STA PPUDATA             ; store it in the PPU and auto increment store location
     INX                     ; increment the X reg
-    CPX #$04                ; set flags
+    CPX #$10                ; set flags
     BNE load_palettes       ; branch if Zero flag unset, we are not at 4 yet
 
     LDX #$00
@@ -44,7 +44,7 @@ load_sprites:
     LDA sprites,X
     STA $0200,X             ; Here we write to an indexed memory location which is equally offset
     INX
-    CPX #$04
+    CPX #$20
     BNE load_sprites
 
     
@@ -71,7 +71,23 @@ forever:
 
 .segment "RODATA"       ; Read Only Data
 palettes:
-.byte $29, $19, $09, $0f
+.byte $0d, $0c, $1c, $2c
+.byte $0d, $19, $29, $3a
+.byte $0d, $00, $10, $20
+.byte $0d, $06, $16, $26
 
 sprites:
+
+ship_sprite:
+;      Y    T#  ATR   X
 .byte $70, $05, $00, $80
+.byte $70, $06, $00, $88
+.byte $78, $07, $00, $80
+.byte $78, $08, $00, $88
+
+ball_sprite:
+;      Y    T#  ATR   X
+.byte $40, $04, %00000001, $80
+.byte $40, $04, %01000010, $88
+.byte $48, $04, %10000011, $80
+.byte $48, $04, %11000000, $88
