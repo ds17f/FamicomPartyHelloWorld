@@ -30,28 +30,22 @@
     LDX #$00            ; Load the low byte
     STX PPUADDR         ; Store into PPUADDR
 
-    ; Now write the colors for that palette
-    LDA #$29            ; The code for the color into the accumulator
-    STA PPUDATA         ; Write the color to the PPUDATA
-                        ; this will automatically increment the memaddr in PPUADDR
-                        ; so PPUADDR will now point to 3F01, the next position
-                        ; in the color palette table
-    LDA #$19
-    STA PPUDATA
-    LDA #$09
-    STA PPUDATA
-    LDA #$0f
-    STA PPUDATA
+    LDX #$00
+load_palettes:
+    LDA palettes, X         ; load the pallet color with offest
+    STA PPUDATA             ; store it in the PPU and auto increment store location
+    INX                     ; increment the X reg
+    CPX #$04                ; set flags
+    BNE load_palettes       ; branch if Zero flag unset, we are not at 4 yet
 
+    LDX #$00
+load_sprites:
     ; Now write some sprite data
-    LDA #$70
-    STA $0200           ; y-coord of first sprite
-    LDA #$05
-    STA $0201           ; tile number of the first sprite
-    LDA #$00
-    STA $0202           ; special flags for the sprite
-    LDA #$80
-    STA $0203           ; x-coord of first sprite
+    LDA sprites,X
+    STA $0200,X             ; Here we write to an indexed memory location which is equally offset
+    INX
+    CPX #$04
+    BNE load_sprites
 
     
 vblankwait:             ; wait for another vblank before continuing
@@ -74,3 +68,10 @@ forever:
 
 .segment "CHR"          ; Character rom
 .incbin "graphics.chr"  ; load the graphics as binary
+
+.segment "RODATA"       ; Read Only Data
+palettes:
+.byte $29, $19, $09, $0f
+
+sprites:
+.byte $70, $05, $00, $80
