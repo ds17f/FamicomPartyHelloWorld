@@ -1,0 +1,8 @@
+{
+  "filename": "starfield.nesproj",
+  "filepath": "/Users/damian/Developer/NES/FamicomPartyHelloWorld/resources/starfield.nesproj",
+  "bank": 1,
+  "nametable": "/Users/damian/Developer/NES/FamicomPartyHelloWorld/resources/starfield.nam",
+  "tileset": "/Users/damian/Developer/NES/FamicomPartyHelloWorld/src/starfield.chr",
+  "palettes": "/Users/damian/Developer/NES/FamicomPartyHelloWorld/resources/starfield.pal"
+}
