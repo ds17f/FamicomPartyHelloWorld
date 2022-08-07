@@ -1,15 +1,18 @@
 .include "constants.inc"
 .include "header.inc"
- 
+
 .segment "ZEROPAGE"
 player_x: .res 1
 player_y: .res 1
+player_dir: .res 1 ; 0: left, 1: right
 .exportzp player_x, player_y
  
 .segment "CODE"     ; CODE is all program code
 .proc irq_handler
     RTI
 .endproc
+
+.import update_player
 
 .proc nmi_handler
     ; Prepare to transfer to OAM at byte 0
@@ -19,6 +22,7 @@ player_y: .res 1
     LDA #$02
     STA OAMDMA
 
+    JSR update_player
     JSR draw_player
 
     ; set scrolling window to 0,0

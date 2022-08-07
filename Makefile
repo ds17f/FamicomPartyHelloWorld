@@ -1,11 +1,14 @@
-helloworld.nes: reset.o helloworld.o
-	ld65 build/reset.o build/helloworld.o -C nes.cfg -o helloworld.nes
+helloworld.nes: reset.o helloworld.o spritemovement.o
+	ld65 build/reset.o build/helloworld.o build/spritemovement.o -C nes.cfg -o helloworld.nes
 
 reset.o: setup src/reset.asm
 	ca65 src/reset.asm -o build/reset.o
 
 helloworld.o: setup src/helloworld.asm
 	ca65 src/helloworld.asm -o build/helloworld.o
+
+spritemovement.o: setup src/spritemovement.asm
+	ca65 src/spritemovement.asm -o build/spritemovement.o
 
 setup:
 	mkdir -p build
