@@ -17,5 +17,9 @@ clean:
 	rm -f *.nes
 
 run: helloworld.nes
-	java -jar /Applications/Nintaco/Nintaco.jar ./helloworld.nes
+	# java -jar /Applications/Nintaco/Nintaco.jar ./helloworld.nes
+	fceux ./helloworld.nes
+
+publish: helloworld.nes
+	scp helloworld.nes pi@192.168.2.204:~/RetroPie/roms/nes
 

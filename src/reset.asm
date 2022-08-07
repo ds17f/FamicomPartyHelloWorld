@@ -1,5 +1,8 @@
 .include "constants.inc"
 
+.segment "ZEROPAGE"
+.importzp player_x, player_y
+
 .segment "CODE"
 
 .import main
@@ -25,5 +28,12 @@ clear_oam:
 vblankwait:
     BIT PPUSTATUS
     BPL vblankwait
+
+    ; init player X/Y
+    LDA #$80
+    STA player_x
+    LDA #$a0
+    STA player_y
+
     JMP main
 .endproc

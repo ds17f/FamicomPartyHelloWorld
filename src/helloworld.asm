@@ -1,6 +1,11 @@
 .include "constants.inc"
 .include "header.inc"
  
+.segment "ZEROPAGE"
+player_x: .res 1
+player_y: .res 1
+.exportzp player_x, player_y
+ 
 .segment "CODE"     ; CODE is all program code
 .proc irq_handler
     RTI
@@ -14,6 +19,8 @@
     LDA #$02
     STA OAMDMA
 
+    JSR draw_player
+
     ; set scrolling window to 0,0
     ; https://www.nesdev.org/wiki/PPU_scrolling
     LDA #$00
@@ -24,6 +31,82 @@
 .endproc
 
 .import reset_handler
+
+.proc draw_player
+    ; Save registers
+    PHP
+    PHA
+    TXA
+    PHA 
+    TYA
+    PHA
+
+    ; -- write player ship tile numbers
+    ; $0200 is the first sprite position
+    ; each sprite is 4 bytes wide
+    ; the second byte is the tile
+    ; so each of these writes the second byte
+    ; in the first 4 sprites
+    LDA #$05
+    STA $0201
+    LDA #$06
+    STA $0205
+    LDA #$07
+    STA $0209
+    LDA #$08
+    STA $020d
+
+    ; write the player sprite attributes
+    ; each uses palette 0
+    ; as above, each sprite is 4 bytes wide
+    ; and we need to write the 3rd byte in each sprite
+    ; so they'll be offset by 3 from $2000, $2004, etc...
+    LDA #$00
+    STA $0202
+    STA $0206
+    STA $020a
+    STA $020e
+
+    ; set player position
+    ; first sprite, top left
+    LDA player_y
+    STA $0200
+    LDA player_x
+    STA $0203
+    ; next sprite, top right
+    LDA player_y
+    STA $0204
+    LDA player_x
+    CLC
+    ADC #$08        ; add 8 pixels to the right position to find the top right sprite
+    STA $0207
+    ; next sprite, bot left
+    LDA player_y
+    CLC
+    ADC #$08        ; add 8 pixels to the top position to find the left bottom
+    STA $0208
+    LDA player_x
+    STA $020b
+    ; next sprite, bot right
+    LDA player_y
+    CLC
+    ADC #$08        ; add 8 pixels to the top position to find the left bottom
+    STA $020c
+    LDA player_x
+    CLC
+    ADC #$08        ; add 8 pixels to the right position to find the right bottom
+    STA $020f
+
+    ; restore the registers from the stack
+    PLA
+    TAY
+    PLA
+    TAX
+    PLA
+    PLP
+
+    RTS
+.endproc
 
 .export main
 .proc main
@@ -44,13 +127,13 @@ load_palettes:
     BNE load_palettes       ; branch if Zero flag unset, we are not at 4 yet
 
     LDX #$00
-load_sprites:
-    ; Now write some sprite data
-    LDA sprites,X
-    STA SPRITE_PAGE,X             ; Here we write to an indexed memory location which is equally offset
-    INX
-    CPX #$10                      ; only use one sprite group (4 tiles) (change to $20 for both)
-    BNE load_sprites
+; load_sprites:
+;     ; Now write some sprite data
+;     LDA sprites,X
+;     STA SPRITE_PAGE,X             ; Here we write to an indexed memory location which is equally offset
+;     INX
+;     CPX #$10                      ; only use one sprite group (4 tiles) (change to $20 for both)
+;     BNE load_sprites
 
 load_nametable:
 ; ----------- Large Star ---------------------
