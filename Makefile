@@ -1,7 +1,6 @@
-helloworld.nes: reset.o helloworld.o spritemovement.o
-	ld65 build/reset.o build/helloworld.o build/spritemovement.o \
-		-C nes.cfg -o helloworld.nes \
-	
+dist: helloworld.nes
+debug: build_debug
+
 build_debug: reset.o helloworld.o spritemovement.o
 	ld65 build/reset.o build/helloworld.o build/spritemovement.o \
 		-C nes.cfg -o helloworld.nes \
@@ -9,7 +8,12 @@ build_debug: reset.o helloworld.o spritemovement.o
 		-Ln helloworld.labels.txt \
 		--dbgfile helloworld.nes.dbg
 	python utils/prepare_debug.py helloworld
+	rm -f *map.txt
+	rm -f *.labels.txt
 
+helloworld.nes: reset.o helloworld.o spritemovement.o
+	ld65 build/reset.o build/helloworld.o build/spritemovement.o \
+		-C nes.cfg -o helloworld.nes \
  
 reset.o: setup src/reset.asm
 	ca65 src/reset.asm -o build/reset.o
@@ -37,7 +41,7 @@ run: helloworld.nes
 	# java -jar /Applications/Nintaco/Nintaco.jar ./helloworld.nes
 	fceux ./helloworld.nes
 
-debug: build_debug run
+run_debug: build_debug run
 
 publish: helloworld.nes
 	scp helloworld.nes pi@192.168.2.204:~/RetroPie/roms/nes

@@ -1,8 +1,10 @@
 # Famicom Party Hello World 
-Following the tutorial here: https://famicom.party/book/03-gettingstarted/#emulator
+Following the tutorial here: https://famicom.party
 
-## Configuration
-Expects Nintact to be installed at /Applications/Nintacto
+## Prerequisits
+* FCEUX installed
+* Python 3 installed
+* CA65 Installed
 
 ## Usage
 There's a working makefile, so if you just want to run the "game" use:
@@ -10,14 +12,16 @@ There's a working makefile, so if you just want to run the "game" use:
 make run
 ```
 
-You can also build the assembly into an object file
+You can run the application with some symbols setup for FCEUX's debugger 
+by executing
 ```
-make main.o
+make run_debug
 ```
 
 And you can clean everything up with:
 ```
 make clean
 ```
+
 
 
