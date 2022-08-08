@@ -1,25 +1,25 @@
-dist: helloworld.nes
+dist: starfighter.nes
 debug: build_debug
 
-build_debug: reset.o helloworld.o player.o palettes.o backgrounds.o
-	ld65 build/reset.o build/helloworld.o build/player.o build/palettes.o build/backgrounds.o \
-		-C nes.cfg -o helloworld.nes \
-		-m helloworld.map.txt \
-		-Ln helloworld.labels.txt \
-		--dbgfile helloworld.nes.dbg
-	python utils/prepare_debug.py helloworld
+build_debug: reset.o main.o player.o palettes.o backgrounds.o
+	ld65 build/reset.o build/main.o build/player.o build/palettes.o build/backgrounds.o \
+		-C nes.cfg -o starfighter.nes \
+		-m starfighter.map.txt \
+		-Ln starfighter.labels.txt \
+		--dbgfile starfighter.nes.dbg
+	python utils/prepare_debug.py starfighter
 	rm -f *map.txt
 	rm -f *.labels.txt
 
-helloworld.nes: reset.o helloworld.o player.o palettes.o backgrounds.o
-	ld65 build/reset.o build/helloworld.o build/player.o build/palettes.o build/backgrounds.o \
-		-C nes.cfg -o helloworld.nes \
+starfighter.nes: reset.o main.o player.o palettes.o backgrounds.o
+	ld65 build/reset.o build/main.o build/player.o build/palettes.o build/backgrounds.o \
+		-C nes.cfg -o starfighter.nes \
  
 reset.o: setup src/reset.asm
 	ca65 src/reset.asm -o build/reset.o
 
-helloworld.o: setup src/helloworld.asm
-	ca65 src/helloworld.asm -o build/helloworld.o
+main.o: setup src/main.asm
+	ca65 src/main.asm -o build/main.o
 
 player.o: setup src/player.asm
 	ca65 src/player.asm -o build/player.o
@@ -43,12 +43,12 @@ clean:
 	rm -f *.map.txt
 	rm -f *.labels.txt
 
-run: helloworld.nes
-	# java -jar /Applications/Nintaco/Nintaco.jar ./helloworld.nes
-	fceux ./helloworld.nes
+run: starfighter.nes
+	# java -jar /Applications/Nintaco/Nintaco.jar ./starfighter.nes
+	fceux ./starfighter.nes
 
 run_debug: build_debug run
 
-publish: helloworld.nes
-	scp helloworld.nes pi@192.168.2.204:~/RetroPie/roms/nes
+publish: starfighter.nes
+	scp starfighter.nes pi@192.168.2.204:~/RetroPie/roms/nes
 
