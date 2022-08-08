@@ -1,8 +1,8 @@
 dist: helloworld.nes
 debug: build_debug
 
-build_debug: reset.o helloworld.o spritemovement.o
-	ld65 build/reset.o build/helloworld.o build/spritemovement.o \
+build_debug: reset.o helloworld.o player.o palettes.o
+	ld65 build/reset.o build/helloworld.o build/player.o build/palettes.o \
 		-C nes.cfg -o helloworld.nes \
 		-m helloworld.map.txt \
 		-Ln helloworld.labels.txt \
@@ -11,8 +11,8 @@ build_debug: reset.o helloworld.o spritemovement.o
 	rm -f *map.txt
 	rm -f *.labels.txt
 
-helloworld.nes: reset.o helloworld.o spritemovement.o
-	ld65 build/reset.o build/helloworld.o build/spritemovement.o \
+helloworld.nes: reset.o helloworld.o player.o palettes.o
+	ld65 build/reset.o build/helloworld.o build/player.o build/palettes.o \
 		-C nes.cfg -o helloworld.nes \
  
 reset.o: setup src/reset.asm
@@ -21,8 +21,11 @@ reset.o: setup src/reset.asm
 helloworld.o: setup src/helloworld.asm
 	ca65 src/helloworld.asm -o build/helloworld.o
 
-spritemovement.o: setup src/spritemovement.asm
-	ca65 src/spritemovement.asm -o build/spritemovement.o
+player.o: setup src/player.asm
+	ca65 src/player.asm -o build/player.o
+
+palettes.o: setup src/palettes.asm
+	ca65 src/palettes.asm -o build/palettes.o
 
 setup:
 	mkdir -p build
