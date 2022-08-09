@@ -2,11 +2,71 @@
 player_x: .res 1
 player_y: .res 1
 player_dir: .res 1 ; 0: left, 1: right
+player_virt: .res 1; 0: down, 1: up
+
+
 .exportzp player_x, player_y
  
 .segment "CODE"
 .export update_player
 .proc update_player
+    JSR player_vertical
+    JSR player_horizontal
+.endproc
+
+.proc player_vertical
+        ; preserve registers to stack
+        PHP
+        PHA
+        TXA
+        PHA
+        TYA
+        PHA
+
+        ; check if player is at the bottom
+        LDA player_y
+        CMP #$d0        ; at the bottom?
+        BCC not_at_bottom_edge
+        ; at bottom, so turn around bright eyes
+        LDX #$01
+        STX player_virt
+        JMP direction_set
+
+        not_at_bottom_edge:
+            ;check if we're at the top
+            LDA player_y ; implied
+            CMP #$10
+            BNE direction_set
+            ; we're at the top so we need to turn around
+            LDX #$00
+            STX player_virt
+            ; fall over to direction_set
+
+        direction_set:
+            LDA player_virt
+            CMP #$00
+            BNE move_up
+            ;move down
+            INC player_y
+            JMP exit_sub
+            move_up:
+                DEC player_y
+                ; fallover to ext
+
+        exit_sub:
+            ; restore the registers from the stack
+            PLA
+            TAY
+            PLA
+            TAX
+            PLA
+            PLP
+
+            ; exit
+            RTS
+.endproc
+
+.proc player_horizontal
         ; preserve registers to stack
         PHP
         PHA
@@ -38,9 +98,15 @@ player_dir: .res 1 ; 0: left, 1: right
         BEQ move_right
     ; move left
         ; direction is #$00 so move left
+        ; LDA player_x
+        ; SBC #01
+        ; STA player_x
         DEC player_x
         JMP exit_sub
     move_right:
+        ; LDA player_x
+        ; ADC #01
+        ; STA player_x
         INC player_x
     exit_sub:
         ; restore registers from stack
