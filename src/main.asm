@@ -33,6 +33,7 @@
 .import reset_handler
 .import init_palettes
 .import draw_starfield
+.import draw_objects
 
 .export main
 .proc main
@@ -43,6 +44,7 @@
     ; and then write the starfield to that table
     LDY #$20
     JSR draw_starfield
+    JSR draw_objects
     ; set the base of the bottom left nametable
     ; and then write the starfield to that table
     LDY #$28
@@ -66,5 +68,5 @@
 .segment "VECTORS"  ; Special code that goes at the end of the program rom
 .addr nmi_handler, reset_handler, irq_handler
 
-.segment "CHR"          ; Character rom
-.incbin "starfield.chr"  ; load the graphics as binary
+.segment "CHR"              ; Character rom
+.incbin "scrolling.chr"     ; load the graphics as binary
