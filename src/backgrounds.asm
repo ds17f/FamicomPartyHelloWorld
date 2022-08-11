@@ -2,17 +2,19 @@
 .segment "ZEROPAGE"
 _nt_addr:       .res 2  ; address of the data structure for a tile to write to nt
 _nt_hi_byte_0:  .res 1  ; the high byte of the first addr of the nametable
+_atr_page:      .res 1  ; the high byte of the attribute table ($23, $27, $2b, $2f)
 _nt_len:        .res 1  ; the length of the data in the nametable
 _nt_tile:       .res 1  ; the tile that's being written
 
-.exportzp _nt_addr, _nt_len, _nt_hi_byte_0, _nt_tile
+.exportzp _nt_addr, _nt_len, _nt_hi_byte_0, _nt_tile, _atr_page
 
 
 .segment "CODE"
 
 .export draw_starfield
 ; draw the starfield to a nametable
-; @param: Y : set Yreg to the high byte of the base address of the nametable ($20, $24, $28, $2c)
+; @param: _nt_hi_byte_0 : the high byte of the base address of the nametable ($20, $24, $28, $2c)
+; @param: _atr_page : the high byte of the attribute table ($23, $27, $2b, $2f)
 .proc draw_starfield
     ; load the label's address into zero page
     LDX #0
@@ -23,14 +25,14 @@ _nt_tile:       .res 1  ; the tile that's being written
     STA _nt_addr,X
 
     ; write to the nametable
-    STY _nt_hi_byte_0
     JSR draw_nametable_struct
 
     RTS
 .endproc
 
 ; draw the objects to the nametable
-; @param: Y : set Yreg to the high byte of the base address of the nametable ($20, $24, $28, $2c)
+; @param: _nt_hi_byte_0 : the high byte of the base address of the nametable ($20, $24, $28, $2c)
+; @param: _atr_page : the high byte of the attribute table ($23, $27, $2b, $2f)
 .export draw_objects
 .proc draw_objects
     ; load the label's address into zero page
@@ -42,7 +44,6 @@ _nt_tile:       .res 1  ; the tile that's being written
     STA _nt_addr,X
 
     ; write to the nametable
-    STY _nt_hi_byte_0
     JSR draw_nametable_struct
 
     RTS
@@ -55,7 +56,7 @@ _nt_tile:       .res 1  ; the tile that's being written
 ;    Each block of data should contain: 
 ;    1 byte for the total length of the data
 ;    Then as set of 6 bytes for each placement
-;    tile, tile_offset_hi, tile_offset_lo, att_table_hi, att__lo, a_table_data
+;    tile, tile_offset_hi, tile_offset_lo, att__lo, a_table_data
 ; EXAMPLE:
 ;  some_tile_data:
 ;  ; length 
@@ -66,6 +67,7 @@ _nt_tile:       .res 1  ; the tile that's being written
 ;
 ; @param _nt_addr
 ; @param _nt_hi_byte_0
+; @param _atr_page
 ;
 ; @internal _nt_len
 ; @internal _nt_tile
@@ -107,8 +109,8 @@ _nt_tile:       .res 1  ; the tile that's being written
         ; --- attribute data
         LDA PPUSTATUS
 
-        INY
-        LDA (_nt_addr),Y        ; read the hi bit
+        ; we read the hi bit from input
+        LDA _atr_page           ; read the hi bit
         STA PPUADDR             ; and write it
 
         INY
@@ -138,58 +140,63 @@ _nt_tile:       .res 1  ; the tile that's being written
 .segment "RODATA"       ; Read Only Data
 ; Each block of data should contain: 
 ; 1 byte for the total length of the data
-; Then as set of 6 bytes for each placement
-; tile, tile_offset_hi, tile_offset_lo, att_table_hi, att__lo, a_table_data
+; Then as set of 5 bytes for each placement
+; tile, tile_offset_hi, tile_offset_lo, att__lo, a_table_data
 starfield:
 ; length 
-.byte 61
+.byte 51
 ; large star
-;     tile, thi  tlo  ahi  alo  atable
-.byte $2f, $00, $6b, $23, $c2, %01000000
-;.byte $2f, $01, $57, $23, $d5, %01000000
-.byte $2f, $02, $23, $23, $e0, %00000100
-.byte $2f, $03, $52, $23, $f4, %01000000
+;     tile, thi  tlo alo  atable
+.byte $2f, $00, $6b, $c2, %01000000
+;.byte $2f, $01, $57,$d5, %01000000
+.byte $2f, $02, $23, $e0, %00000100
+.byte $2f, $03, $52, $f4, %01000000
 ;nt_small_star1:
-;     tile  hi lo    ahi  alo  atable 
-.byte $2d, $00, $c3, $23, $c8, %01000000
-.byte $2d, $01, $1d, $23, $d7, %00000001
-.byte $2d, $01, $93, $23, $dc, %00000100
-.byte $2d, $03, $28, $23, $f2, %00000001
+;     tile  hi lo    alo  atable 
+.byte $2d, $00, $c3, $c8, %01000000
+.byte $2d, $01, $1d, $d7, %00000001
+.byte $2d, $01, $93, $dc, %00000100
+.byte $2d, $03, $28, $f2, %00000001
 ;nt_small_star2:
-;     tile  hi   lo  ahi  alo  atable 
-.byte $2e, $00, $77, $23, $c5, %01000000
-;.byte $2e, $01, $3a, $23, $d6, %00000100
-.byte $2e, $02, $4b, $23, $e2, %01000000
-.byte $2e, $03, $3f, $23, $f7, %00000100
+;     tile  hi   lo  alo  atable 
+.byte $2e, $00, $77, $c5, %01000000
+;.byte $2e, $01, $3a, $d6, %00000100
+.byte $2e, $02, $4b, $e2, %01000000
+.byte $2e, $03, $3f, $f7, %00000100
 
 
 satellite:
 ; length 
-.byte 121
+.byte 101
 ; top left
-;     tile, thi  tlo  ahi  alo  atable
-.byte $44, $01, $14, $23, $d5, %00000000
-.byte $44, $01, $15, $23, $d5, %00000000
-.byte $54, $01, $34, $23, $d5, %00000000
-.byte $54, $01, $35, $23, $d5, %00000000
+;     tile, thi  tlo  alo  atable
+.byte $44, $01, $14, $d5, %00000000
+.byte $44, $01, $15, $d5, %00000000
+.byte $54, $01, $34, $d5, %00000000
+.byte $54, $01, $35, $d5, %00000000
 ; top right
-.byte $44, $01, $18, $23, $d6, %00000000
-.byte $44, $01, $19, $23, $d6, %00000000
-.byte $54, $01, $38, $23, $d6, %00000000
-.byte $54, $01, $39, $23, $d6, %00000000
+.byte $44, $01, $18, $d6, %00000000
+.byte $44, $01, $19, $d6, %00000000
+.byte $54, $01, $38, $d6, %00000000
+.byte $54, $01, $39, $d6, %00000000
 ; bottom left
-.byte $44, $01, $54, $23, $d5, %00000000
-.byte $44, $01, $55, $23, $d5, %00000000
-.byte $44, $01, $74, $23, $d5, %00000000
-.byte $44, $01, $75, $23, $d5, %00000000
+.byte $44, $01, $54, $d5, %00000000
+.byte $44, $01, $55, $d5, %00000000
+.byte $44, $01, $74, $d5, %00000000
+.byte $44, $01, $75, $d5, %00000000
 ; bottom right
-.byte $44, $01, $58, $23, $d6, %00000000
-.byte $44, $01, $59, $23, $d6, %00000000
-.byte $44, $01, $78, $23, $d6, %00000000
-.byte $44, $01, $79, $23, $d6, %00000000
+.byte $44, $01, $58, $d6, %00000000
+.byte $44, $01, $59, $d6, %00000000
+.byte $44, $01, $78, $d6, %00000000
+.byte $44, $01, $79, $d6, %00000000
 ; center
-.byte $45, $01, $36, $23, $d5, %00000000
-.byte $46, $01, $37, $23, $d5, %00000000
-.byte $55, $01, $56, $23, $d5, %00000000
-.byte $56, $01, $57, $23, $d5, %00000000
+.byte $45, $01, $36, $d5, %00000000
+.byte $46, $01, $37, $d5, %00000000
+.byte $55, $01, $56, $d5, %00000000
+.byte $56, $01, $57, $d5, %00000000
 
+; nebula:
+; ; length
+; .byte 0
+; ;     tile, thi  tlo  alo  atable
+; .byte $44, $01, $14, $d5, %00000000

@@ -1,6 +1,9 @@
 .include "constants.inc"
 .include "header.inc"
 
+.segment "ZEROPAGE"
+.importzp _nt_hi_byte_0, _atr_page
+
 .segment "CODE"     ; CODE is all program code
 .proc irq_handler
     RTI
@@ -43,11 +46,17 @@
     ; set the base of the top left nametable
     ; and then write the starfield to that table
     LDY #$20
+    STY _nt_hi_byte_0
+    LDX #$23
+    STX _atr_page
     JSR draw_starfield
     JSR draw_objects
     ; set the base of the bottom left nametable
     ; and then write the starfield to that table
     LDY #$28
+    STY _nt_hi_byte_0
+    LDX #$2b
+    STX _atr_page
     JSR draw_starfield
         
     vblankwait:             ; wait for another vblank before continuing
