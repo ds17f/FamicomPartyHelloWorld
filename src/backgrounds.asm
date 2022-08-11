@@ -1,9 +1,9 @@
 .include "constants.inc"
 .segment "ZEROPAGE"
-_nt_addr: .res 2        ; address of the data structure for a tile to write to nt
-_nt_hi_byte_0: .res 1   ; the high byte of the first addr of the nametable
-_nt_len: .res 1         ; the length of the data in the nametable
-_nt_tile: .res 1
+_nt_addr:       .res 2  ; address of the data structure for a tile to write to nt
+_nt_hi_byte_0:  .res 1  ; the high byte of the first addr of the nametable
+_nt_len:        .res 1  ; the length of the data in the nametable
+_nt_tile:       .res 1  ; the tile that's being written
 
 .exportzp _nt_addr, _nt_len, _nt_hi_byte_0, _nt_tile
 
@@ -11,6 +11,8 @@ _nt_tile: .res 1
 .segment "CODE"
 
 .export draw_starfield
+; draw the starfield to a nametable
+; @param: Y : set Yreg to the high byte of the base address of the nametable ($20, $24, $28, $2c)
 .proc draw_starfield
     ;---- nt_large_star
     ; load the label's address into zero page
@@ -21,13 +23,8 @@ _nt_tile: .res 1
     LDA #>nt_large_star
     STA _nt_addr,X
 
-    ; do the first nametable
-    LDA #$20
-    STA _nt_hi_byte_0
-    JSR draw_nametable_tile
-    ; do the second nametable
-    LDA #$28
-    STA _nt_hi_byte_0
+    ; write to the nametable
+    STY _nt_hi_byte_0
     JSR draw_nametable_tile
 
     ;---- nt_small_star1
@@ -39,13 +36,8 @@ _nt_tile: .res 1
     LDA #>nt_small_star1
     STA _nt_addr,X
 
-    ; do the first nametable
-    LDA #$20
-    STA _nt_hi_byte_0
-    JSR draw_nametable_tile
-    ; do the second nametable
-    LDA #$28
-    STA _nt_hi_byte_0
+    ; write to the nametable
+    STY _nt_hi_byte_0
     JSR draw_nametable_tile
 
     ;---- nt_small_star2
@@ -57,13 +49,8 @@ _nt_tile: .res 1
     LDA #>nt_small_star2
     STA _nt_addr,X
 
-    ; do the first nametable
-    LDA #$20
-    STA _nt_hi_byte_0
-    JSR draw_nametable_tile
-    ; do the second nametable
-    LDA #$28
-    STA _nt_hi_byte_0
+    ; write to the nametable
+    STY _nt_hi_byte_0
     JSR draw_nametable_tile
 
     ;---- nt_satellite
@@ -75,13 +62,8 @@ _nt_tile: .res 1
     LDA #>nt_satellite
     STA _nt_addr,X
 
-    ; do the first nametable
-    LDA #$20
-    STA _nt_hi_byte_0
-    JSR draw_nametable_tile
-    ; do the second nametable
-    LDA #$28
-    STA _nt_hi_byte_0
+    ; write to the nametable
+    STY _nt_hi_byte_0
     JSR draw_nametable_tile
 
     RTS

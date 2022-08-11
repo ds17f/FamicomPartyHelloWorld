@@ -38,6 +38,14 @@
 .proc main
 
     JSR init_palettes
+
+    ; set the base of the top left nametable
+    ; and then write the starfield to that table
+    LDY #$20
+    JSR draw_starfield
+    ; set the base of the bottom left nametable
+    ; and then write the starfield to that table
+    LDY #$28
     JSR draw_starfield
         
     vblankwait:             ; wait for another vblank before continuing
