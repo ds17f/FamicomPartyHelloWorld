@@ -32,13 +32,13 @@
 
 .import reset_handler
 .import init_palettes
-.import load_nametables
+.import draw_starfield
 
 .export main
 .proc main
 
     JSR init_palettes
-    JSR load_nametables
+    JSR draw_starfield
         
     vblankwait:             ; wait for another vblank before continuing
         BIT PPUSTATUS
