@@ -46,6 +46,16 @@ _nt_tile:       .res 1  ; the tile that's being written
     ; write to the nametable
     JSR draw_nametable_struct
 
+    ; load the label's address into zero page
+    LDX #0
+    LDA #<nebula
+    STA _nt_addr,X
+    INX
+    LDA #>nebula
+    STA _nt_addr,X
+
+    ; write to the nametable
+    JSR draw_nametable_struct
     RTS
 
 .endproc
@@ -195,8 +205,21 @@ satellite:
 .byte $55, $01, $56, $d5, %00000000
 .byte $56, $01, $57, $d5, %00000000
 
-; nebula:
+nebula:
 ; ; length
-; .byte 0
-; ;     tile, thi  tlo  alo  atable
-; .byte $44, $01, $14, $d5, %00000000
+.byte 71
+;     tile thi  tlo  alo  atable
+.byte $41, $02, $68, $e2, %11110000
+.byte $42, $02, $69, $e2, %11110000
+.byte $43, $02, $6a, $e2, %11110000
+.byte $50, $02, $87, $e9, %11001100
+.byte $51, $02, $88, $ea, %00111111
+.byte $52, $02, $89, $ea, %00111111
+.byte $53, $02, $8a, $ea, %00111111
+.byte $60, $02, $a7, $e9, %11001100
+.byte $61, $02, $a8, $ea, %00111111
+.byte $62, $02, $a9, $ea, %00111111
+.byte $63, $02, $aa, $ea, %00111111
+.byte $70, $02, $c7, $e9, %11001100
+.byte $71, $02, $c8, $ea, %00111111
+.byte $72, $02, $c9, $ea, %00111111
