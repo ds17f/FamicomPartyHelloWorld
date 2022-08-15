@@ -36,7 +36,8 @@
 .import reset_handler
 .import init_palettes
 .import draw_starfield
-.import draw_objects
+.import draw_objects_1
+.import draw_objects_2
 
 .export main
 .proc main
@@ -50,7 +51,7 @@
     LDX #$23
     STX _atr_page
     JSR draw_starfield
-    JSR draw_objects
+    JSR draw_objects_1
     ; set the base of the bottom left nametable
     ; and then write the starfield to that table
     LDY #$28
@@ -58,6 +59,7 @@
     LDX #$2b
     STX _atr_page
     JSR draw_starfield
+    JSR draw_objects_2
         
     vblankwait:             ; wait for another vblank before continuing
         BIT PPUSTATUS

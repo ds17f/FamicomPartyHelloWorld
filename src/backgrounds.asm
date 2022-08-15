@@ -33,8 +33,8 @@ _nt_tile:       .res 1  ; the tile that's being written
 ; draw the objects to the nametable
 ; @param: _nt_hi_byte_0 : the high byte of the base address of the nametable ($20, $24, $28, $2c)
 ; @param: _atr_page : the high byte of the attribute table ($23, $27, $2b, $2f)
-.export draw_objects
-.proc draw_objects
+.export draw_objects_2
+.proc draw_objects_2
     ; load the label's address into zero page
     LDX #0
     LDA #<satellite
@@ -57,6 +57,14 @@ _nt_tile:       .res 1  ; the tile that's being written
     ; write to the nametable
     JSR draw_nametable_struct
 
+    RTS
+.endproc
+
+; draw the objects to the nametable
+; @param: _nt_hi_byte_0 : the high byte of the base address of the nametable ($20, $24, $28, $2c)
+; @param: _atr_page : the high byte of the attribute table ($23, $27, $2b, $2f)
+.export draw_objects_1
+.proc draw_objects_1
     ; load the label's address into zero page
     LDX #0
     LDA #<planet
