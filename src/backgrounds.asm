@@ -56,6 +56,28 @@ _nt_tile:       .res 1  ; the tile that's being written
 
     ; write to the nametable
     JSR draw_nametable_struct
+
+    ; load the label's address into zero page
+    LDX #0
+    LDA #<planet
+    STA _nt_addr,X
+    INX
+    LDA #>planet
+    STA _nt_addr,X
+
+    ; write to the nametable
+    JSR draw_nametable_struct
+
+    ; load the label's address into zero page
+    LDX #0
+    LDA #<nova
+    STA _nt_addr,X
+    INX
+    LDA #>nova
+    STA _nt_addr,X
+
+    ; write to the nametable
+    JSR draw_nametable_struct
     RTS
 
 .endproc
@@ -165,7 +187,7 @@ starfield:
 ;     tile  hi lo    alo  atable 
 .byte $2d, $00, $c3, $c8, %01000000
 .byte $2d, $01, $1d, $d7, %00000001
-.byte $2d, $01, $93, $dc, %00000100
+.byte $2d, $01, $93, $dc, %00000110
 .byte $2d, $03, $28, $f2, %00000001
 ;nt_small_star2:
 ;     tile  hi   lo  alo  atable 
@@ -223,3 +245,21 @@ nebula:
 .byte $70, $02, $c7, $e9, %11001100
 .byte $71, $02, $c8, $ea, %00111111
 .byte $72, $02, $c9, $ea, %00111111
+
+planet:
+; ; length
+.byte 21
+;     tile thi  tlo  alo  atable
+.byte $38, $00, $44, $c1, %00110000
+.byte $39, $00, $45, $c1, %00110000
+.byte $3a, $00, $64, $c1, %00110000
+.byte $3b, $00, $65, $c1, %00110000
+
+nova:
+; ; length
+.byte 21
+;     tile thi  tlo  alo  atable
+.byte $30, $01, $6f, $d3, %10000000
+.byte $31, $01, $70, $d4, %00100000
+.byte $32, $01, $8f, $db, %00001000
+.byte $33, $01, $90, $dc, %00000110
