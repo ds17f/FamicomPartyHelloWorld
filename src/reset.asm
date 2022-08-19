@@ -1,7 +1,9 @@
 .include "constants.inc"
 
 .segment "ZEROPAGE"
+scroll: .res 1
 .importzp player_x, player_y
+.exportzp scroll
 
 .segment "CODE"
 
@@ -35,5 +37,9 @@ vblankwait:
     LDA #$a0
     STA player_y
 
+    ; init scrolling
+    LDA Y_TOP
+    STA scroll
     JMP main
+
 .endproc

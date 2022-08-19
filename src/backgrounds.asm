@@ -11,6 +11,28 @@ _nt_tile:       .res 1  ; the tile that's being written
 
 .segment "CODE"
 
+.export init_nametables
+.proc init_nametables
+    ; set the base of the top left nametable
+    ; and then write the starfield to that table
+    LDY #$20
+    STY _nt_hi_byte_0
+    LDX #$23
+    STX _atr_page
+    JSR draw_starfield
+    JSR draw_objects_1
+    ; set the base of the bottom left nametable
+    ; and then write the starfield to that table
+    LDY #$28
+    STY _nt_hi_byte_0
+    LDX #$2b
+    STX _atr_page
+    JSR draw_starfield
+    JSR draw_objects_2
+
+    RTS
+.endproc
+
 .export draw_starfield
 ; draw the starfield to a nametable
 ; @param: _nt_hi_byte_0 : the high byte of the base address of the nametable ($20, $24, $28, $2c)

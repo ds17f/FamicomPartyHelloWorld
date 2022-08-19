@@ -2,7 +2,8 @@
 .include "header.inc"
 
 .segment "ZEROPAGE"
-.importzp _nt_hi_byte_0, _atr_page
+ppuctrl_settings: .res 1
+.importzp _nt_hi_byte_0, _atr_page, scroll
 
 .segment "CODE"     ; CODE is all program code
 .proc irq_handler
@@ -24,48 +25,53 @@
     JSR update_player
     JSR draw_player
 
-    ; set scrolling window to 0,0
-    ; https://www.nesdev.org/wiki/PPU_scrolling
-    LDA #$00
-    STA PPUSCROLL
-    STA PPUSCROLL
+    JSR scroll_background
 
     RTI
 .endproc
 
+.proc scroll_background
+    
+    LDA scroll
+    CMP #Y_TOP                  ; has scrolling reached the top?
+    BNE update_positions        ; if not, skip the nametable swap
+    ; if yes, update nametable
+    LDA ppuctrl_settings
+    EOR #%00000010          ; XOR the bit for the vertical nametable
+                            ; this will swap it to the other one
+    STA ppuctrl_settings
+    STA PPUCTRL
+    LDA #Y_BOTTOM
+    STA scroll
+
+    update_positions:
+        LDA #00
+        STA PPUSCROLL   ; set x scroll
+
+        DEC scroll      ; move scrolling down 1 pixel
+        LDA scroll
+        STA PPUSCROLL   ; set y scroll
+
+    RTS
+.endproc
+
 .import reset_handler
 .import init_palettes
-.import draw_starfield
-.import draw_objects_1
-.import draw_objects_2
+.import init_nametables
 
 .export main
 .proc main
 
     JSR init_palettes
 
-    ; set the base of the top left nametable
-    ; and then write the starfield to that table
-    LDY #$20
-    STY _nt_hi_byte_0
-    LDX #$23
-    STX _atr_page
-    JSR draw_starfield
-    JSR draw_objects_1
-    ; set the base of the bottom left nametable
-    ; and then write the starfield to that table
-    LDY #$28
-    STY _nt_hi_byte_0
-    LDX #$2b
-    STX _atr_page
-    JSR draw_starfield
-    JSR draw_objects_2
+    JSR init_nametables
         
     vblankwait:             ; wait for another vblank before continuing
         BIT PPUSTATUS
         BPL vblankwait
 
         LDA #%10010000      ; turn on NMIs, sprites use first pattern table
+        STA ppuctrl_settings
         STA PPUCTRL
 
         LDA #%00011110      ; enable back/fore/groud colors for the whole screen

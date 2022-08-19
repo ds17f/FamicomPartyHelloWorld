@@ -10,3 +10,8 @@ OAMDMA      = $4014
 
 SPRITE_PAGE = $0200 ; https://fceux.com/web/help/NESRAMMappingFindingValues.html 
                     ; (0200 - 02FF is usually sprite data)
+
+X_LEFT      = 0
+X_RIGHT     = 255
+Y_TOP       = 0
+Y_BOTTOM    = 240
