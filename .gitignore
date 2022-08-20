@@ -4,6 +4,5 @@ build/
 *.nes
 *.dbg
 *.map.txt
-*.nl
 *.labels.txt
 

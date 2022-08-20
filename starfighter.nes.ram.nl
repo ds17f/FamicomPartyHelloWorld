@@ -1,0 +1,10 @@
+$0010#scroll#
+$0012#player_x#
+$0013#player_y#
+$0014#player_dir#
+$0016#_nt_addr#
+$0018#_nt_hi_byte_0#
+$0019#_atr_page#
+$001A#_nt_len#
+$001B#_nt_tile#
+$001C#j1_buttons#
