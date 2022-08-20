@@ -1,11 +1,12 @@
 .include "constants.inc"
 
 .segment "ZEROPAGE"
-player_x: .res 1
-player_y: .res 1
-player_dir: .res 1 ; 0: left, 1: right, 2: no movement
-player_virt: .res 1; 0: down, 1: up, 2: no movement
-.exportzp player_x, player_y
+player_x:       .res    1
+player_y:       .res    1
+player_dir:     .res    1   ; 0: left, 1: right, 2: no movement
+player_virt:    .res    1   ; 0: down, 1: up, 2: no movement
+speed:          .res    1   ; 0: off, 1: on
+.exportzp player_x, player_y, speed
 .importzp j1_buttons
 
 .import read_joypad_1
@@ -18,13 +19,31 @@ player_virt: .res 1; 0: down, 1: up, 2: no movement
     JSR player_horizontal
 .endproc
 
+.export player_buttons
+.proc player_buttons
+    LDA j1_buttons
+    AND #BUTTON_A
+    CMP #BUTTON_A
+    BEQ set_boost
+
+    ; clear boost
+    LDA #MOVE_Y_PIXELS
+    STA speed
+    JMP done
+
+    set_boost:
+        LDA #BOOST_Y_PIXELS
+        STA speed
+    done:
+        RTS
+.endproc
+
 .export player_joypad
 .proc player_joypad
 
     LDA #NO_MOTION  
     STA player_virt
     STA player_dir
-
 
     LDA j1_buttons  ; load the buttons
     AND #BUTTON_UP  ; AND against up
@@ -71,6 +90,7 @@ player_virt: .res 1; 0: down, 1: up, 2: no movement
 
 .proc player_vertical
 
+    ; exit if not moving
     LDA player_virt
     CMP #NO_MOTION
     BEQ done
@@ -80,31 +100,53 @@ player_virt: .res 1; 0: down, 1: up, 2: no movement
     CMP #MOVE_DOWN
     BEQ down
 
-    ; if we're at the top then we can't move
-    LDA player_y
-    CMP #PLAYER_Y_MIN
-    BEQ done
+    ; == Moving UP
 
-    ; not at top so can move
-    LDA player_y
-    SEC
-    SBC #MOVE_Y_PIXELS
+    ; if the player is closer than 1 speed unit
+    ; to the top, then we can't move speed units
+    ; and instead need to just pin to the top
+    LDA speed
+    ADC #8
+    CMP player_y
+    BCC move_up
+
+    ; can't make the full move
+    ; so just store the min
+    LDA #PLAYER_Y_MIN
     STA player_y
-    ; movement done
     JMP done
 
-    down:
-        ; If we're at the bottom we can't move
-        LDA player_y
-        CMP #PLAYER_Y_MAX
-        BCS done
-
-        ; not at bottom
+    move_up:
+        ; not at top so can move
         LDA player_y
         SEC
-        ADC #MOVE_Y_PIXELS
+        SBC speed
         STA player_y
         ; movement done
+        JMP done
+
+    down:
+        ; check if player is at the bottom
+        LDA #PLAYER_Y_MAX
+        SEC
+        SBC speed
+        CMP player_y
+        BCS move_down
+
+        ; can't move past the edge
+        ; so just pin to the edge
+        LDA #PLAYER_Y_MAX
+        STA player_y
+        JMP done
+
+        move_down:
+            ; not at bottom
+            LDA player_y
+            CLC
+            ADC speed
+            STA player_y
+
+        ; fall over to done
 
     done: 
     RTS
@@ -121,30 +163,55 @@ player_virt: .res 1; 0: down, 1: up, 2: no movement
     CMP #MOVE_RIGHT
     BEQ right
 
-    ; Moving left
-    ; if at left edge, don't move
-    LDA player_x
-    CMP #PLAYER_X_MIN
-    BEQ done
+    ; ==== Moving left
 
-    ; not at left edge
-    ; so room to move
-    LDA player_x
-    SEC
-    SBC #MOVE_X_PIXELS
+    ; - if at left edge, don't move
+    ; what we want to do is not add the move 
+    ; if it would put us over the edge
+    ; so we can just compare speed (say 10)
+    ; with the player position (say, 5)
+    ; if speed is less than the player's position
+    ; then he can move speed pixels to the left
+    LDA speed
+    CMP player_x
+    BCC move_left
+
+    ; can't make the full move
+    ; so just store the min
+    LDA #PLAYER_X_MIN
     STA player_x
     JMP done
 
-    right:
-        ; check if player is at the bottom
+    ; not at left edge
+    ; so room to move
+    move_left:
         LDA player_x
-        CMP #PLAYER_X_MAX
-        BCS done
-        ; not at bottom
-        LDA player_x
-        CLC
-        ADC #MOVE_X_PIXELS
+        SEC
+        SBC speed
         STA player_x
+        JMP done
+
+    right:
+        ; check if player is at the right side
+        LDA #PLAYER_X_MAX
+        SEC
+        SBC speed
+        CMP player_x
+        BCS move_right
+
+        ; can't move past the edge
+        ; so just pin to the edge
+        LDA #PLAYER_X_MAX
+        STA player_x
+        JMP done
+
+        move_right:
+            ; not at right
+            LDA player_x
+            CLC
+            ADC speed
+            STA player_x
+
         ; fall over to done
     done: 
     RTS

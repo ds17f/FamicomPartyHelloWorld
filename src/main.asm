@@ -3,7 +3,7 @@
 
 .segment "ZEROPAGE"
 ppuctrl_settings: .res 1
-.importzp _nt_hi_byte_0, _atr_page, scroll
+.importzp _nt_hi_byte_0, _atr_page, scroll, speed
 
 .segment "CODE"     ; CODE is all program code
 .proc irq_handler
@@ -50,8 +50,12 @@ ppuctrl_settings: .res 1
         LDA #00
         STA PPUSCROLL   ; set x scroll
 
-        DEC scroll      ; move scrolling down 1 pixel
+
         LDA scroll
+        SEC
+        SBC speed       ; scroll down at the set speed
+        STA scroll
+
         STA PPUSCROLL   ; set y scroll
 
     RTS
