@@ -11,6 +11,7 @@ ppuctrl_settings: .res 1
 .endproc
 
 ; player routines
+.import read_joypad_1
 .import update_player
 .import draw_player
 
@@ -22,6 +23,7 @@ ppuctrl_settings: .res 1
     LDA #$02
     STA OAMDMA
 
+    JSR read_joypad_1
     JSR update_player
     JSR draw_player
 

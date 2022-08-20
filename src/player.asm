@@ -1,123 +1,153 @@
+.include "constants.inc"
+
 .segment "ZEROPAGE"
 player_x: .res 1
 player_y: .res 1
-player_dir: .res 1 ; 0: left, 1: right
-player_virt: .res 1; 0: down, 1: up
-
-
+player_dir: .res 1 ; 0: left, 1: right, 2: no movement
+player_virt: .res 1; 0: down, 1: up, 2: no movement
 .exportzp player_x, player_y
+.importzp j1_buttons
+
+.import read_joypad_1
  
 .segment "CODE"
 .export update_player
 .proc update_player
+    JSR player_joypad
     JSR player_vertical
     JSR player_horizontal
 .endproc
 
-.proc player_vertical
-        ; preserve registers to stack
-        PHP
-        PHA
-        TXA
-        PHA
-        TYA
-        PHA
+.export player_joypad
+.proc player_joypad
 
-        ; check if player is at the bottom
-        LDA player_y
-        CMP #$d0        ; at the bottom?
-        BCC not_at_bottom_edge
-        ; at bottom, so turn around bright eyes
-        LDX #$01
-        STX player_virt
-        JMP direction_set
+    LDA #NO_MOTION  
+    STA player_virt
+    STA player_dir
 
-        not_at_bottom_edge:
-            ;check if we're at the top
-            LDA player_y ; implied
-            CMP #$10
-            BNE direction_set
-            ; we're at the top so we need to turn around
-            LDX #$00
-            STX player_virt
-            ; fall over to direction_set
 
-        direction_set:
-            LDA player_virt
-            CMP #$00
-            BNE move_up
-            ;move down
-            INC player_y
-            JMP exit_sub
-            move_up:
-                DEC player_y
-                ; fallover to ext
+    LDA j1_buttons  ; load the buttons
+    AND #BUTTON_UP  ; AND against up
+    CMP #BUTTON_UP  ; check if it matches
 
-        exit_sub:
-            ; restore the registers from the stack
-            PLA
-            TAY
-            PLA
-            TAX
-            PLA
-            PLP
+    BNE down        ; if it doesn't check if down is pressed
+    LDA #MOVE_UP    ; moving up
+    STA player_virt
 
-            ; exit
-            RTS
+    JMP horizontal
+    down:
+        LDA j1_buttons      ; load the buttons
+        AND #BUTTON_DOWN    ; AND against down
+        CMP #BUTTON_DOWN    ; check if it matches
+
+        BNE horizontal      ; if it doesn't then we aren't moving vert
+
+        LDA #MOVE_DOWN      ; moving down
+        STA player_virt
+        ; fall over to horizontal check
+    horizontal:
+    ; TODO: check right and left, but these aren't exclusive to up and down
+    ; TODO check left first
+        LDA j1_buttons    
+        AND #BUTTON_LEFT  
+        CMP #BUTTON_LEFT 
+        BNE right
+        ; Moving left
+        LDA #MOVE_LEFT
+        STA player_dir
+        jmp done
+    right:
+        LDA j1_buttons    
+        AND #BUTTON_RIGHT  
+        CMP #BUTTON_RIGHT 
+        BNE done
+        ; Moving right
+        LDA #MOVE_RIGHT
+        STA player_dir
+    done:
+        RTS
+    
 .endproc
 
+.proc player_vertical
+
+    LDA player_virt
+    CMP #NO_MOTION
+    BEQ done
+
+    ; if we're supposed to move down
+    LDA player_virt
+    CMP #MOVE_DOWN
+    BEQ down
+
+    ; if we're at the top then we can't move
+    LDA player_y
+    CMP #PLAYER_Y_MIN
+    BEQ done
+
+    ; not at top so can move
+    LDA player_y
+    SEC
+    SBC #MOVE_Y_PIXELS
+    STA player_y
+    ; movement done
+    JMP done
+
+    down:
+        ; If we're at the bottom we can't move
+        LDA player_y
+        CMP #PLAYER_Y_MAX
+        BCS done
+
+        ; not at bottom
+        LDA player_y
+        SEC
+        ADC #MOVE_Y_PIXELS
+        STA player_y
+        ; movement done
+
+    done: 
+    RTS
+.endproc
 .proc player_horizontal
-        ; preserve registers to stack
-        PHP
-        PHA
-        TXA
-        PHA
-        TYA
-        PHA
 
-        ; check if player at right edge
+    ; exit if not moving
+    LDA player_dir
+    CMP #NO_MOTION
+    BEQ done
+
+    ; Jump to right if moving right
+    LDA player_dir
+    CMP #MOVE_RIGHT
+    BEQ right
+
+    ; Moving left
+    ; if at left edge, don't move
+    LDA player_x
+    CMP #PLAYER_X_MIN
+    BEQ done
+
+    ; not at left edge
+    ; so room to move
+    LDA player_x
+    SEC
+    SBC #MOVE_X_PIXELS
+    STA player_x
+    JMP done
+
+    right:
+        ; check if player is at the bottom
         LDA player_x
-        CMP #$e0                ; right edge
-        BCC not_at_right_edge   ; check if less than the right edge
-        ; if BCC not taken we are at the right edge ($0e)
-        LDA #$00
-        STA player_dir          ; start moving left
-        JMP direction_set       ; we have set the dir so skip left check
-
-    not_at_right_edge:          ; left check
+        CMP #PLAYER_X_MAX
+        BCS done
+        ; not at bottom
         LDA player_x
-        CMP #$10                ; left edge
-        BCS direction_set       ; check if greater than or equal to the left edge
-        ; if BCS not taken we are at the left edge
-        LDA #$01                
-        STA player_dir          ; start moving right
-
-    direction_set:
-        LDA player_dir
-        CMP #$01
-        BEQ move_right
-    ; move left
-        ; direction is #$00 so move left
-        ; LDA player_x
-        ; SBC #01
-        ; STA player_x
-        DEC player_x
-        JMP exit_sub
-    move_right:
-        ; LDA player_x
-        ; ADC #01
-        ; STA player_x
-        INC player_x
-    exit_sub:
-        ; restore registers from stack
-        PLA
-        TAY
-        PLA
-        TAX
-        PLA
-        PLP
-        ; exit
-        RTS
+        CLC
+        ADC #MOVE_X_PIXELS
+        STA player_x
+        ; fall over to done
+    done: 
+    RTS
 .endproc
 
 .export draw_player

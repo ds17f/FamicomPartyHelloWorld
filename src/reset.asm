@@ -2,7 +2,7 @@
 
 .segment "ZEROPAGE"
 scroll: .res 1
-.importzp player_x, player_y
+.importzp player_x, player_y, j1_buttons
 .exportzp scroll
 
 .segment "CODE"
@@ -30,6 +30,10 @@ clear_oam:
 vblankwait:
     BIT PPUSTATUS
     BPL vblankwait
+
+    ; init controllers to unpressed
+    LDA #00
+    STA j1_buttons
 
     ; init player X/Y
     LDA #$80

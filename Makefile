@@ -1,8 +1,8 @@
 dist: starfighter.nes
 debug: build_debug
 
-build_debug: reset.o main.o player.o palettes.o backgrounds.o
-	ld65 build/reset.o build/main.o build/player.o build/palettes.o build/backgrounds.o \
+build_debug: reset.o main.o player.o palettes.o backgrounds.o controllers.o
+	ld65 build/reset.o build/main.o build/player.o build/palettes.o build/backgrounds.o build/controllers.o \
 		-C nes.cfg -o starfighter.nes \
 		-m starfighter.map.txt \
 		-Ln starfighter.labels.txt \
@@ -11,8 +11,8 @@ build_debug: reset.o main.o player.o palettes.o backgrounds.o
 	rm -f *map.txt
 	rm -f *.labels.txt
 
-starfighter.nes: reset.o main.o player.o palettes.o backgrounds.o
-	ld65 build/reset.o build/main.o build/player.o build/palettes.o build/backgrounds.o \
+starfighter.nes: reset.o main.o player.o palettes.o backgrounds.o controllers.o
+	ld65 build/reset.o build/main.o build/player.o build/palettes.o build/backgrounds.o build/controllers.o \
 		-C nes.cfg -o starfighter.nes \
  
 reset.o: setup src/reset.asm
@@ -29,6 +29,9 @@ palettes.o: setup src/palettes.asm
 
 backgrounds.o: setup src/backgrounds.asm
 	ca65 src/backgrounds.asm -o build/backgrounds.o
+
+controllers.o: setup src/controllers.asm
+	ca65 src/controllers.asm -o build/controllers.o
 
 setup:
 	mkdir -p build
